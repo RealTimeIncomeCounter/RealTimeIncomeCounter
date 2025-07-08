@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real‑Time Income Counter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+      position: relative;
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      width: 100%;
+      padding: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .intro {
+      margin-bottom: 1.5rem;
+      color: #555;
+      line-height: 1.4;
+    }
+    .field {
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .field label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .field input, .field select {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccd0d5;
+      border-radius: 6px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .buttons button {
+      flex: 1;
+      margin: 0 0.25rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #startBtn { background-color: #28a745; color: white; }
+    #startBtn:hover:not(:disabled) { background-color: #218838; }
+    #stopBtn { background-color: #dc3545; color: white; }
+    #stopBtn:hover:not(:disabled) { background-color: #c82333; }
+    button:disabled { background-color: #adb5bd; cursor: not-allowed; }
+    .display { text-align: center; }
+    .display .value {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #007bff;
+    }
+    .display .info {
+      font-size: 0.9rem;
+      color: #555;
+    }
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #777;
+      width: 100%;
+      text-align: center;
+    }
+    .attribution {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 1rem;
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Real‑Time Income Counter</h1>
+  </header>
+
+  <main class="container">
+    <p class="intro">
+      This tool shows your earnings in real time based on your monthly salary. Choose your currency, set your monthly salary, then watch your pay accumulate per second.
+    </p>
+
+    <div class="field">
+      <label for="currency">Currency</label>
+      <select id="currency"></select>
+    </div>
+
+    <div class="field">
+      <label for="monthlyPay">Monthly Salary (<span id="currencyLabel"></span>)</label>
+      <input type="number" id="monthlyPay" placeholder="e.g. 20000">
+    </div>
+
+    <div class="buttons">
+      <button id="startBtn" disabled>Start</button>
+      <button id="stopBtn" disabled>Stop</button>
+    </div>
+
+    <div class="display">
+      <div class="value" id="display">0.0000000000</div>
+      <div class="info" id="rateInfo">− per update</div>
+    </div>
+  </main>
+
+  <div class="attribution">Made by Henrik SHB</div>
+
+  
+
+  <script>
+    const currencySelect = document.getElementById('currency');
+    const currencyLabel = document.getElementById('currencyLabel');
+    const monthlyPayInput = document.getElementById('monthlyPay');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const display = document.getElementById('display');
+    const rateInfo = document.getElementById('rateInfo');
+
+    let timer = null;
+    let currentValue = 0;
+    let step = 0;
+    const interval = 100; // fixed interval in ms
+
+    const currencyList = [
+      'USD','EUR','JPY','GBP','AUD','CAD','CHF','CNY','SEK','NZD',
+      'MXN','SGD','HKD','NOK','KRW','TRY','INR','RUB','BRL','ZAR',
+      'DKK','PLN','TWD','THB','MYR','IDR','CZK','HUF','ILS','CLP',
+      'PHP','AED','COP','SAR','ARS','PEN','VND','EGP','KWD','QAR',
+      'OMR','LKR','PKR','BDT','UAH','RON','KZT','NGN','MAD','BGN'
+    ];
+
+    const symbols = {
+      'USD': '$', 'EUR': '€', 'JPY': '¥', 'GBP': '£', 'AUD': 'A$',
+      'CAD': 'C$', 'CHF': 'CHF', 'CNY': '¥', 'SEK': 'kr', 'NZD': 'NZ$',
+      'MXN': 'MX$', 'SGD': 'S$', 'HKD': 'HK$', 'NOK': 'kr', 'KRW': '₩',
+      'TRY': '₺', 'INR': '₹', 'RUB': '₽', 'BRL': 'R$', 'ZAR': 'R',
+      'DKK': 'kr', 'PLN': 'zł', 'THB': '฿', 'MYR': 'RM', 'IDR': 'Rp',
+      'PHP': '₱', 'AED': 'د.إ', 'SAR': '﷼', 'EGP': '£', 'KWD': 'د.ك'
+    };
+
+    // Populate currency dropdown
+    currencyList.forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code;
+      currencySelect.appendChild(opt);
+    });
+
+    function updateCurrencyLabel() {
+      currencyLabel.textContent = currencySelect.value;
+      const pay = parseFloat(monthlyPayInput.value);
+      startBtn.disabled = isNaN(pay) || pay <= 0;
+    }
+
+    currencySelect.addEventListener('change', updateCurrencyLabel);
+    monthlyPayInput.addEventListener('input', updateCurrencyLabel);
+
+    // Default selection
+    currencySelect.value = 'USD';
+    updateCurrencyLabel();
+
+    startBtn.addEventListener('click', () => {
+      const pay = parseFloat(monthlyPayInput.value);
+      const curr = currencySelect.value;
+      const symbol = symbols[curr] ? symbols[curr] + ' ' : '';
+      const secondsInMonth = 30.44 * 24 * 3600;
+      step = pay / secondsInMonth * (interval / 1000);
+      currentValue = 0;
+      display.textContent = `${symbol}${currentValue.toFixed(10)}`;
+      rateInfo.textContent = `${symbol}${(step * 1000).toFixed(4)} ${curr}/s (${symbol}${step.toFixed(10)} per ${interval}ms)`;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+
+      timer = setInterval(() => {
+        currentValue += step;
+        display.textContent = `${symbol}${currentValue.toFixed(10)}`;
+      }, interval);
+    });
+
+    stopBtn.addEventListener('click', () => {
+      clearInterval(timer);
+      timer = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
