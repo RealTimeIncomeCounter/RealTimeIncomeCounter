@@ -32,7 +32,6 @@
       margin: 0;
       font-size: 2rem;
       font-weight: 600;
-      text-align: center;
       letter-spacing: 1px;
     }
     .container {
@@ -43,40 +42,20 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .intro {
-      margin-bottom: 1.5rem;
-      color: #555;
-      line-height: 1.4;
-    }
-    .field {
-      margin-bottom: 1.25rem;
-      display: flex;
-      flex-direction: column;
-    }
-    .field label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
+    .intro { margin-bottom: 1.5rem; color: #555; line-height: 1.4; }
+    .field { margin-bottom: 1.25rem; display: flex; flex-direction: column; }
+    .field label { font-weight: 600; margin-bottom: 0.5rem; }
     .field input, .field select {
       padding: 0.75rem;
       font-size: 1rem;
       border: 1px solid #ccd0d5;
       border-radius: 6px;
     }
-    .buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-    }
+    .buttons { display: flex; justify-content: space-between; margin-bottom: 2rem; }
     .buttons button {
-      flex: 1;
-      margin: 0 0.25rem;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
+      flex: 1; margin: 0 0.25rem; padding: 0.75rem;
+      font-size: 1rem; border: none; border-radius: 6px;
+      cursor: pointer; transition: background-color 0.2s;
     }
     #startBtn { background-color: #28a745; color: white; }
     #startBtn:hover:not(:disabled) { background-color: #218838; }
@@ -85,30 +64,35 @@
     button:disabled { background-color: #adb5bd; cursor: not-allowed; }
     .display { text-align: center; }
     .display .value {
-      font-size: 3rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      color: #007bff;
+      font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem; color: #007bff;
     }
-    .display .info {
-      font-size: 0.9rem;
-      color: #555;
+    .display .info { font-size: 0.9rem; color: #555; }
+    .bottom-bar {
+      position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 1rem;
     }
-    footer {
-      margin-top: auto;
-      padding: 1rem;
-      font-size: 0.8rem;
-      color: #777;
-      width: 100%;
-      text-align: center;
+    .bottom-bar .attribution {
+      font-size: 1rem; color: #555; font-weight: 500;
     }
-    .attribution {
-      position: absolute;
-      bottom: 0.5rem;
-      right: 1rem;
-      font-size: 1.75rem;
-      font-weight: 500;
-      color: #aaa;
+    .bottom-bar .divider {
+      width: 2px; height: 24px;
+      background-color: #888;
+      border-radius: 2px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+      margin: 0 0.75rem;
+    }
+    .coffee-btn {
+      display: flex; align-items: center;
+      text-decoration: none; background-color: #fff; color: #333;
+      padding: 0.25rem 0.75rem; border: 1px solid #333; border-radius: 6px;
+      font-size: 0.875rem; font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    .coffee-btn img { width: 20px; height: 20px; margin-right: 0.5rem; }
+    .coffee-btn:hover {
+      background-color: #f8f8f8;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
   </style>
 </head>
@@ -116,37 +100,32 @@
   <header>
     <h1>Real‑Time Income Counter</h1>
   </header>
-
   <main class="container">
-    <p class="intro">
-      This tool shows your earnings in real time based on your monthly salary. Choose your currency, set your monthly salary, then watch your pay accumulate per second.
-    </p>
-
+    <p class="intro">This tool shows your earnings in real time based on your monthly salary. Choose your currency, set your monthly salary, then watch your pay accumulate per second.</p>
     <div class="field">
       <label for="currency">Currency</label>
       <select id="currency"></select>
     </div>
-
     <div class="field">
       <label for="monthlyPay">Monthly Salary (<span id="currencyLabel"></span>)</label>
       <input type="number" id="monthlyPay" placeholder="e.g. 20000">
     </div>
-
     <div class="buttons">
       <button id="startBtn" disabled>Start</button>
       <button id="stopBtn" disabled>Stop</button>
     </div>
-
     <div class="display">
       <div class="value" id="display">0.0000000000</div>
       <div class="info" id="rateInfo">− per update</div>
     </div>
   </main>
-
-  <div class="attribution">Made by Henrik SHB</div>
-
-  
-
+  <div class="bottom-bar">
+    <div class="attribution">Made by Henrik SHB</div>
+    <div class="divider"></div>
+    <a target="_blank" href="https://coff.ee/henrikshb" class="coffee-btn">
+      <img alt="Coffee" src="coffee2.png">Buy me a coffee
+    </a>
+  </div>
   <script>
     const currencySelect = document.getElementById('currency');
     const currencyLabel = document.getElementById('currencyLabel');
@@ -159,7 +138,7 @@
     let timer = null;
     let currentValue = 0;
     let step = 0;
-    const interval = 100; // fixed interval in ms
+    const interval = 100;
 
     const currencyList = [
       'USD','EUR','JPY','GBP','AUD','CAD','CHF','CNY','SEK','NZD',
@@ -168,7 +147,6 @@
       'PHP','AED','COP','SAR','ARS','PEN','VND','EGP','KWD','QAR',
       'OMR','LKR','PKR','BDT','UAH','RON','KZT','NGN','MAD','BGN'
     ];
-
     const symbols = {
       'USD': '$', 'EUR': '€', 'JPY': '¥', 'GBP': '£', 'AUD': 'A$',
       'CAD': 'C$', 'CHF': 'CHF', 'CNY': '¥', 'SEK': 'kr', 'NZD': 'NZ$',
@@ -177,51 +155,35 @@
       'DKK': 'kr', 'PLN': 'zł', 'THB': '฿', 'MYR': 'RM', 'IDR': 'Rp',
       'PHP': '₱', 'AED': 'د.إ', 'SAR': '﷼', 'EGP': '£', 'KWD': 'د.ك'
     };
-
-    // Populate currency dropdown
     currencyList.forEach(code => {
-      const opt = document.createElement('option');
-      opt.value = code;
-      opt.textContent = code;
+      const opt = document.createElement('option'); opt.value = code; opt.textContent = code;
       currencySelect.appendChild(opt);
     });
-
     function updateCurrencyLabel() {
       currencyLabel.textContent = currencySelect.value;
       const pay = parseFloat(monthlyPayInput.value);
       startBtn.disabled = isNaN(pay) || pay <= 0;
     }
-
     currencySelect.addEventListener('change', updateCurrencyLabel);
     monthlyPayInput.addEventListener('input', updateCurrencyLabel);
-
-    // Default selection
-    currencySelect.value = 'USD';
-    updateCurrencyLabel();
-
+    currencySelect.value = 'USD'; updateCurrencyLabel();
     startBtn.addEventListener('click', () => {
       const pay = parseFloat(monthlyPayInput.value);
       const curr = currencySelect.value;
       const symbol = symbols[curr] ? symbols[curr] + ' ' : '';
-      const secondsInMonth = 30.44 * 24 * 3600;
-      step = pay / secondsInMonth * (interval / 1000);
+      step = pay / (30.44 * 24 * 3600) * (interval/1000);
       currentValue = 0;
       display.textContent = `${symbol}${currentValue.toFixed(10)}`;
-      rateInfo.textContent = `${symbol}${(step * 1000).toFixed(4)} ${curr}/s (${symbol}${step.toFixed(10)} per ${interval}ms)`;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-
+      rateInfo.textContent = `${symbol}${(step*1000).toFixed(4)} ${curr}/s`;
+      startBtn.disabled = true; stopBtn.disabled = false;
       timer = setInterval(() => {
         currentValue += step;
         display.textContent = `${symbol}${currentValue.toFixed(10)}`;
       }, interval);
     });
-
     stopBtn.addEventListener('click', () => {
       clearInterval(timer);
-      timer = null;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
+      startBtn.disabled = false; stopBtn.disabled = true;
     });
   </script>
 </body>
